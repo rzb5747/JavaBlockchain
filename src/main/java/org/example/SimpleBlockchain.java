@@ -48,25 +48,52 @@ class Block {
         this.hash = calculateHash();
     }
 
-    // Calculate the hash of the block
-    public String calculateHash() {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            String input = index + timestamp + previousHash + student.getName() + student.getGpa() + student.getCredits();
+
+public String calculateHash() {
+
+    try {
+
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        int nonce = 0;
+        String input;
+        while (true) {
+            input = index + timestamp + previousHash + student.getName() + student.getGpa() + student.getCredits() + nonce;
             byte[] hashBytes = digest.digest(input.getBytes("UTF-8"));
             StringBuilder hexString = new StringBuilder();
-
             for (byte b : hashBytes) {
                 String hex = Integer.toHexString(0xff & b);
                 if (hex.length() == 1) hexString.append('0');
                 hexString.append(hex);
             }
+            String hash = hexString.toString();
+            if (hash.startsWith("000")) {
 
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException | java.io.UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+                return hash;
+
+            }
+            nonce++;
         }
+    } catch (NoSuchAlgorithmException | java.io.UnsupportedEncodingException e) {
+        throw new RuntimeException(e);
     }
+}
+//    while (true) {
+//        input = index + timestamp + previousHash + student.getName() + student.getGpa() + student.getCredits() + nonce;
+//        byte[] hashBytes = digest.digest(input.getBytes("UTF-8"));
+//        StringBuilder hexString =
+//
+//    func (b*Block) calculateHash(diff string) string {
+//        nonce := 0
+//        for {
+//            record :=fmt.Sprintf("#{b.Index}-#{b.Timestamp-#{b.Data}#{b.PrevHash)-#{nonce}")
+//              h := sha256.New()
+//              h.Write([]byte(record))
+//              hashed := h.Sum(nil)
+//              shash := fmt.Sprintf("#{hashed}")
+//              if string.HasPrefix(shash, diff): fmt.Sprintf("%X", hashed)
+//    nonce++
+//        }
+//    }
 
     // Getters
     public int getIndex() {
@@ -125,7 +152,7 @@ class Blockchain {
 public class SimpleBlockchain {
     public static void main(String[] args) {
         Blockchain blockchain = new Blockchain();
-
+        DatabaseManager dbManager = new DatabaseManager();
         // Create student objects and add them to the blockchain
         Student student1 = new Student("Joe Oakes", 2.5, 104);
         Student student2 = new Student("Jane Oakes", 3.2, 89);
@@ -137,5 +164,16 @@ public class SimpleBlockchain {
 
         // Print the blockchain
         blockchain.printBlockchain();
+
+
+
+
+        dbManager.addStudent(student1);
+        dbManager.addStudent(student2);
+        dbManager.addStudent(student3);
+
+
+
+        dbManager.close();
     }
 }
